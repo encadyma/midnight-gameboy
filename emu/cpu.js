@@ -4,9 +4,9 @@
 // Programs accessed through same bus as normal memory
 // Instructions range from one-three bytes
 
-// The eternal state of the CPU.
+// The state of the Z80.
 
-CPU = {
+Z80 = {
     // REGISTERS: Registers, each
     // holding one byte. Used for calculation.
     // There are other special registers,
