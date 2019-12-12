@@ -4,8 +4,10 @@
 </head>
 <body onload="init()">
     <h1>Midnight CHIP-8</h1>
-    <canvas id="screen" width="640" height="320"></canvas>
+    <canvas id="screen" width="640" height="320"></canvas><br/><br/>
+    <span>Upload ROM: </span><input type="file" id="romInput" onchange="loadROM(this.files)"><br/>
     <p>Project possible by <a href="http://www.codeslinger.co.uk/pages/projects/chip8.html">this tutorial!</a></p>
+    <canvas id="memview" width="64" height="64"></canvas>
     <script src="./chip8/cpu.js"></script>
 </body>
 </html>

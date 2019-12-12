@@ -20,6 +20,8 @@ CHIP8 = {
 
     // Loads in bytes from PRGMBUFFER onto 0x200-.
     memLoad(prgmBuffer) {
+        console.log("Loading program buffer into memory.")
+
         CHIP8.r.I = 0;
         CHIP8.r.PC = 0x200;
 
@@ -29,11 +31,25 @@ CHIP8 = {
         for (let i = 0; i < prgm.length; i++) {
             CHIP8_MEM[i + 0x200] = prgm[i];
         }
+
+        drawMemory();
+    },
+
+    // Consumes from memory the next operation.
+    // Reads for one word/two bytes!
+    read: function() {
+        nextOp = CHIP8_MEM[CHIP8.r.PC];
+        nextOp <<= 8;
+        nextOp |= CHIP8_MEM[CHIP8.r.PC + 1];
+        CHIP8.r.PC += 2;
+        console.log("next operation: " + hex(nextOp));
+        CHIP8.do(nextOp);
     },
 
     // Performs an opcode operation
+    // Needs to handle all 35 opcodes!
     do: function(op) {
-        console.error("opcode not supported: " + op);
+        console.error("opcode not supported: " + hex(op));
     }
 }
 
@@ -60,6 +76,38 @@ CHIP8_GRAPHICS = {
     }
 }
 
+function drawMemory() {
+    let ctx = document.getElementById("memview").getContext("2d");
+    for (let m = 0; m < CHIP8_MEM.length; m++) {
+        let x = m % 64, y = Math.floor(m / 64);
+        if (CHIP8_MEM[m] > 0) {
+            ctx.fillStyle = "#00dddd";
+        } else {
+            ctx.fillStyle = "#dddddd";
+        }
+        ctx.fillRect(x * 1, y * 1, 1, 1);
+    }
+}
+
+function loadROM(fileList) {
+    if (fileList.length > 0) {
+        document.getElementById("romInput").hidden = true;
+        
+        // Load it into memory!
+        fileList[0].arrayBuffer().then((b) => {
+            console.log("ROM read completed, size = " + new Uint8Array(b).length);
+            CHIP8.memLoad(b);
+        })
+    } else {
+        console.log("change found, but no files uploaded.");
+    }
+}
+
+function hex(num) {
+    return num.toString(16);
+}
+
 function init() {
     CHIP8_GRAPHICS.draw();
+    drawMemory();
 }
