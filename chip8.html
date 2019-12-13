@@ -1,11 +1,12 @@
 <html>
 <head>
     <title>Midnight CHIP-8</title>
+    <link rel="stylesheet" href="midnight.css"/>
 </head>
 <body onload="init()">
     <h1>Midnight CHIP-8</h1>
     <canvas id="screen" width="640" height="320"></canvas><br/><br/>
-    <span>Upload ROM: </span><input type="file" id="romInput" onchange="loadROM(this.files)"><br/>
+    <span>Upload ROM: </span><input type="file" id="romInput" onchange="loadROM(this.files)"><br/><br/>
     <div>
         <button onclick="dumpGraphics()">Dump screen</button>
         <button onclick="dumpCPU()">Dump CPU</button>
@@ -18,7 +19,8 @@
         <button onclick="loop()">Step Program</button>
         <button onclick="loop(); dumpCPU()">Step & Dump</button>
     </div>
-    <p>Project possible by <a href="http://www.codeslinger.co.uk/pages/projects/chip8.html">this tutorial!</a></p>
+    <p>You can download some CHIP-8 ROMs to play by <a target="_blank" href="https://github.com/dmatlack/chip8/tree/master/roms">clicking here</a>!</p>
+    <p>Project possible by <a target="_blank" href="http://www.codeslinger.co.uk/pages/projects/chip8.html">this tutorial!</a></p>
     <canvas id="memview" width="256" height="280"></canvas>
     <pre id="dump"></pre>
     <script src="./chip8/cpu.js"></script>

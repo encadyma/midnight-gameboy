@@ -1,0 +1,12 @@
+html, body {
+    background-color: #1a0a24;
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+    font-family: monospace;
+    text-align: left;
+}
+
+a {
+    color: #e626ff;
+}

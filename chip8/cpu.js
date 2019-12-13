@@ -4,6 +4,11 @@
 // BYTE = 1 byte
 // WORD = 2 bytes
 
+MIDNIGHT = {
+    fg: "#d387ff",
+    bg: "#380c52",
+}
+
 CHIP8 = {
     r: {
         // 8-bit registers
@@ -239,7 +244,6 @@ CHIP8 = {
         switch(mode) {
             case 0xE0:
                 CHIP8_GRAPHICS.clear();
-                CHIP8_GRAPHICS.draw();
                 CHIP8.colorRaised = "#badc58";
                 break;
             case 0xEE:
@@ -312,15 +316,15 @@ CHIP8_GRAPHICS = {
     // NAIVE drawing function
     draw: function() {
         let ctx = document.getElementById("screen").getContext("2d");
-        ctx.clearRect(0, 0, 640, 320);
         for (let p = 0; p < CHIP8_GRAPHICS.buffer.length; p++) {
             let x = p % 64, y = Math.floor(p / 64);
-            if (CHIP8_GRAPHICS.buffer[p] > 0) {
-                ctx.fillStyle = "#111111";
-            } else {
-                ctx.fillStyle = "#eeeeee";
-            }
+            ctx.fillStyle = MIDNIGHT.bg;
             ctx.fillRect(x * 10, y * 10, 10, 10);
+
+            if (CHIP8_GRAPHICS.buffer[p] > 0) {
+                ctx.fillStyle = MIDNIGHT.fg;
+                ctx.fillRect(x * 10 + 1, y * 10 + 1, 8, 8);
+            }
         }
     },
     
@@ -332,6 +336,9 @@ CHIP8_GRAPHICS = {
         
         x = CHIP8.r.V[x];
         y = CHIP8.r.V[y];
+
+        let ctx = document.getElementById("screen").getContext("2d");
+        ctx.clearRect(x, y, 8, n);
 
         CHIP8.r.V[0xF] = 0;
         for (let ind = 0; ind < n; ind++) {
@@ -352,8 +359,15 @@ CHIP8_GRAPHICS = {
         CHIP8_GRAPHICS.draw();
     },
 
+    forceWash: function() {
+        let ctx = document.getElementById("screen").getContext("2d");
+        ctx.fillStyle = MIDNIGHT.bg;
+        ctx.fillRect(0, 0, 640, 360);
+    },
+
     clear: function() {
         // TODO: Add more to clear.
+        CHIP8_GRAPHICS.forceWash();
         CHIP8_GRAPHICS.buffer = new Uint8Array(new ArrayBuffer(64*32));
     }
 }
@@ -388,9 +402,9 @@ function drawMemory() {
         if (CHIP8.r.PC == m) {
             ctx.fillStyle = "#ddaa00";
         } else if (CHIP8_MEM[m] > 0) {
-            ctx.fillStyle = "#00dddd";
+            ctx.fillStyle = MIDNIGHT.fg;
         } else {
-            ctx.fillStyle = "#dddddd";
+            ctx.fillStyle = MIDNIGHT.bg;
         }
         ctx.fillRect(x * 4, y * 4, 4, 4);
     }
@@ -436,6 +450,7 @@ function hex(num) {
 }
 
 function init() {
+    CHIP8_GRAPHICS.clear();
     CHIP8_GRAPHICS.draw();
     drawMemory();
 }
