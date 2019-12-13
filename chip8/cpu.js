@@ -66,6 +66,10 @@ CHIP8 = {
                 return CHIP8.handleOp0(op & 0xfff);
             case 0x1:
                 // JUMP opcode (0x1NNN)
+                if ((op & 0x0fff) == CHIP8.r.PC - 0x2) {
+                    CHIP8.r.PC = op & 0x0fff;
+                    return CODES.terminate;
+                }
                 CHIP8.r.PC = op & 0x0fff;
                 return CODES.jump;
             case 0x2:
@@ -360,6 +364,13 @@ let FPS_INTERVAL = 1;
 function loadROM(fileList) {
     if (fileList.length > 0) {
         document.getElementById("romInput").hidden = true;
+        document.getElementById("romHelper").hidden = true;
+        document.getElementById("helperText2").hidden = true;
+        document.getElementById("helperText").innerHTML = `<b>Nice!</b> You can now use the controls below to start emulating.
+        <br>Use the left shoulder of your keyboard (1-4, Q-R, A-F, Z-V) as
+        <br>the hexpad input. You can also see the "Keys" tab for key bindings.
+        <br><br>To load a different ROM, please refresh the page.
+        <br><br>Enjoy the emulator!`
         
         // Load it into memory!
         fileList[0].arrayBuffer().then((b) => {

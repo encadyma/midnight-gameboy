@@ -1,9 +1,12 @@
 CODES = {
-    unknown: { name: (op) => hex(op) + '????', color: '#ff0000' },
+    unknown: { name: (op) => hex(op) + '?', color: '#ff0000' },
 
     // 0x0 operations:
     dispclear: { name: (op) => 'CLS', color: '#badc58' },
     return: { name: (op) => 'RETURN', color: '#9b59b6' },
+
+    // Extra operations:
+    terminate: { name: (op) => 'TERM', color: '#9b59b6' },
     
     // Regular operations:
     jump: { name: (op) => 'JUMP ' + fhex(op & 0xfff), color: '#1abc9c' },

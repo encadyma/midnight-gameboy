@@ -6,12 +6,13 @@
 <body onload="init()">
     <h1>Midnight CHIP-8</h1>
     <canvas id="screen" width="640" height="320"></canvas><br/><br/>
-    <span>Upload ROM: </span><input type="file" id="romInput" onchange="loadROM(this.files)"><br/><br/>
+    <span id="romHelper">Upload ROM: </span><input type="file" id="romInput" onchange="loadROM(this.files)"><br/><br/>
     <div>
         <button onclick="dumpGraphics()">Dump screen</button>
         <button onclick="dumpCPU()">Dump CPU</button>
     </div>
-    <p>You can download some CHIP-8 ROMs to play by <a target="_blank" href="https://github.com/dmatlack/chip8/tree/master/roms">clicking here</a>!</p>
+    <p id="helperText">To use the emulator, upload a CHIP-8 ROM and click the Play button to run.</p>
+    <p id="helperText2">You can download some CHIP-8 ROMs to play by <a target="_blank" href="https://github.com/dmatlack/chip8/tree/master/roms">clicking here</a>!</p>
     <p>Project possible by <a target="_blank" href="http://www.codeslinger.co.uk/pages/projects/chip8.html">this tutorial!</a></p>
     <canvas id="memview" width="640" height="320"></canvas>
     <pre id="dump"></pre>

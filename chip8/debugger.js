@@ -12,9 +12,20 @@ DEBUGGER = {
     ],
     currentChoice: "MAIN",
     report: function(op, type) {
+        let key = Object.keys(CODES).find(k => CODES[k] == type)
+        if (key == 'terminate') {
+            clearLoop();
+        } else if (DEBUGGER.breakPoints.indexOf(key) !== -1) {
+            alert("Reached breakpoint @ " + fhex(op) + ". Opcode type: " + key)
+            clearLoop();
+        }
+
         DEBUGGER.lastOps.push({ op, type })
     },
     slowMode: false,
+    breakPoints: [
+        "unknown"
+    ]
 }
 
 function dumpGraphics() {
@@ -61,6 +72,8 @@ function drawMain() {
         drawMemory();
     } else if (DEBUGGER.currentChoice == "CPU") {
         drawCPU();
+    } else if (DEBUGGER.currentChoice == "KEYS") {
+        drawKeys();
     } else {
         drawUnknown();
     }
@@ -93,16 +106,16 @@ function drawMemorySide() {
     ctx.fillText(getLastInstr(), 310, 25);
 }
 
-let mainBtns = [];
+let mainBtns = [], keyBtns = [];
 
 function drawMainMenu() {
     ctx.clearRect(270, 40, 370, 210);
     ctx.fillStyle = MIDNIGHT.fg;
     mainBtns = [
-        drawTextBtn(270, 50, 40, 40, "Play", "\u25B6", startLoop),
-        drawTextBtn(320, 50, 40, 40, "Slow", "s\u25B7", startSlowLoop),
-        drawTextBtn(370, 50, 40, 40, "Pause", "\u23F8", clearLoop),
-        drawTextBtn(420, 50, 40, 40, "Step", "\u25CE", loop)
+        drawTextBtn(270, 50, 40, 40, "Play", "\u25B6", clockInterval && !DEBUGGER.slowMode ? "#ddaa00" : null, startLoop),
+        drawTextBtn(320, 50, 40, 40, "Slow", "s\u25B7", DEBUGGER.slowMode ? "#ddaa00" : null , startSlowLoop),
+        drawTextBtn(370, 50, 40, 40, "Pause", "\u23F8", clockInterval ? null : MIDNIGHT.fg + "66", clearLoop),
+        drawTextBtn(420, 50, 40, 40, "Step", "\u25CE", clockInterval ? MIDNIGHT.fg + "66" : null, loop)
     ]
 }
 
@@ -111,7 +124,7 @@ function drawCPU() {
     ctx.fillStyle = MIDNIGHT.fg;
     ctx.font = '14px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('CPU NOT IMPLEMENTED', 455, 120);
+    ctx.fillText('CPU VIEW NOT IMPLEMENTED', 455, 120);
     ctx.font = '10px monospace';
     ctx.fillText('(please choose another menu)', 455, 140);
 }
@@ -121,9 +134,32 @@ function drawMemory() {
     ctx.fillStyle = MIDNIGHT.fg;
     ctx.font = '14px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('MEMORY NOT IMPLEMENTED', 455, 120);
+    ctx.fillText('MEMORY VIEW NOT IMPLEMENTED', 455, 120);
     ctx.font = '10px monospace';
     ctx.fillText('(please choose another menu)', 455, 140);
+}
+
+function drawKeys() {
+    ctx.clearRect(270, 40, 370, 210);
+    ctx.fillStyle = MIDNIGHT.fg;
+    keyBtns = [
+        drawKeyBtn(270, 50, 40, 40, "1", "1", null, startLoop),
+        drawKeyBtn(320, 50, 40, 40, "2", "2", null , startSlowLoop),
+        drawKeyBtn(370, 50, 40, 40, "3", "3", null, clearLoop),
+        drawKeyBtn(420, 50, 40, 40, "C", "4", null, loop),
+        drawKeyBtn(270, 100, 40, 40, "4", "Q", null, startLoop),
+        drawKeyBtn(320, 100, 40, 40, "5", "W", null, startSlowLoop),
+        drawKeyBtn(370, 100, 40, 40, "6", "E", null, clearLoop),
+        drawKeyBtn(420, 100, 40, 40, "D", "R", null, loop),
+        drawKeyBtn(270, 150, 40, 40, "7", "A", null, startLoop),
+        drawKeyBtn(320, 150, 40, 40, "8", "S", null, startSlowLoop),
+        drawKeyBtn(370, 150, 40, 40, "9", "D", null, clearLoop),
+        drawKeyBtn(420, 150, 40, 40, "E", "F", null, loop),
+        drawKeyBtn(270, 200, 40, 40, "A", "Z", null, startLoop),
+        drawKeyBtn(320, 200, 40, 40, "0", "X", null, startSlowLoop),
+        drawKeyBtn(370, 200, 40, 40, "B", "C", null, clearLoop),
+        drawKeyBtn(420, 200, 40, 40, "F", "V", null, loop),
+    ]
 }
 
 function drawUnknown() {
@@ -136,22 +172,39 @@ function drawUnknown() {
     ctx.fillText('(please choose another menu)', 455, 140);
 }
 
-function drawTextBtn(x, y, w, h, text, lbl, cb) {
-    ctx.fillStyle = MIDNIGHT.fg;
+function drawTextBtn(x, y, w, h, text, lbl, clr, cb) {
+    ctx.fillStyle = clr || MIDNIGHT.fg;
     ctx.font = '10px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(text, x + (w / 2), y + h + 14);
 
-    return drawBtn(x, y, w, h, lbl, cb);
+    return drawBtn(x, y, w, h, lbl, clr, cb);
 }
 
-function drawBtn(x, y, w, h, lbl, cb) {
+function drawKeyBtn(x, y, w, h, lbl, slbl, clr, cb) {
     ctx.clearRect(x, y, w, h);
-    ctx.fillStyle = MIDNIGHT.fg + "AA";
+    ctx.fillStyle = clr || MIDNIGHT.fg + "AA";
     ctx.fillRect(x, y, w, h);
     ctx.fillStyle = MIDNIGHT.bg;
     ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
-    ctx.fillStyle = MIDNIGHT.fg + "AA";
+    ctx.fillStyle = clr || MIDNIGHT.fg + "AA";
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(lbl, x + (w / 2) - 4, y + (h / 2) + 2);
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(slbl, x + w - 8, y + h - 8);
+
+    return {x, y, w, h, cb}
+}
+
+function drawBtn(x, y, w, h, lbl, clr, cb) {
+    ctx.clearRect(x, y, w, h);
+    ctx.fillStyle = clr || MIDNIGHT.fg + "AA";
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = MIDNIGHT.bg;
+    ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+    ctx.fillStyle = clr || MIDNIGHT.fg + "AA";
     ctx.font = '20px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(lbl, x + (w / 2), y + (h / 2) + 4);
@@ -229,14 +282,16 @@ screen.onclick = function (event) {
         }
     }
 
-    // Main menu buttons
-    mainBtns.forEach((btn) => {
-        if (x >= btn.x && x <= btn.x + btn.w
-            && y >= btn.y && y <= btn.y + btn.h) {
-                btn.cb();
-                return;
-            }
-    })
+    if (DEBUGGER.currentChoice == "MAIN") {
+        // Main menu buttons
+        mainBtns.forEach((btn) => {
+            if (x >= btn.x && x <= btn.x + btn.w
+                && y >= btn.y && y <= btn.y + btn.h) {
+                    btn.cb();
+                    return;
+                }
+        })
+    }
 
     shouldRefresh = true;
     drawDebugger();
