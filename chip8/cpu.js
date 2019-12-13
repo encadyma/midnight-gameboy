@@ -142,14 +142,47 @@ CHIP8 = {
                 CHIP8.r.PC = (op & 0x0fff) + CHIP8.r.V[0];
                 CHIP8.colorRaised = "#1abc9c";
                 break;
+            case 0xC:
+                // SET RANDOM to V opcode (0xCXNN)
+                let rand = Math.floor(Math.random() * 256);
+                CHIP8.r.V[secondDigit] = rand & (op & 0xff);
+                CHIP8.colorRaised = "#BDC581";
+                break;
+            case 0xD:
+                CHIP8_GRAPHICS.drawSprite(secondDigit, thirdDigit, fourthDigit);
+                CHIP8.colorRaised = "#badc58";
+                break;
+            case 0xE:
+            case 0xF:
             default:
                 CHIP8.colorRaised = "#ff0000";
-                console.error("opcode not supported: " + hex(op) + ", first digit " + firstDigit);
+                console.error("opcode not supported: " + hex(op));
         }
     },
 
     handleMath: function(mode, x, y) {
-        
+        switch (mode) {
+            case 0x0:
+                CHIP8.r.V[x] = CHIP8.r.V[y]
+                break;
+            case 0x1:
+                CHIP8.r.V[x] |= CHIP8.r.V[y]
+                break;
+            case 0x2:
+                CHIP8.r.V[x] &= CHIP8.r.V[y]
+                break;
+            case 0x3:
+                CHIP8.r.V[x] ^= CHIP8.r.V[y]
+                break;
+            case 0x4:
+            case 0x5:
+            case 0x6:
+            case 0x7:
+            case 0xE:
+            default:
+                CHIP8.colorRaised = "#ff0000";
+                console.error("math opcode not supported: 0x" + hex(mode));
+        }
     },
 }
 
@@ -164,6 +197,7 @@ CHIP8_GRAPHICS = {
     // NAIVE drawing function
     draw: function() {
         let ctx = document.getElementById("screen").getContext("2d");
+        ctx.clearRect(0, 0, 640, 320);
         for (let p = 0; p < CHIP8_GRAPHICS.buffer.length; p++) {
             let x = p % 64, y = Math.floor(p / 64);
             if (CHIP8_GRAPHICS.buffer[p] > 0) {
@@ -175,13 +209,35 @@ CHIP8_GRAPHICS = {
         }
     },
 
+    drawSprite: function(x, y, n) {
+        // Starting from (x, y),
+        // reads N bytes from memory
+        // starting at I. Each byte represents
+        // one 8-pixel row.
+        CHIP8.r.V[0xF] = 0;
+        for (let ind = 0; ind < n; ind++) {
+            let row = CHIP8_MEM[CHIP8.r.I + ind];
+            let ny = (y + ind) % 32;
+            for (let t = 0; t < 8; t++) {
+                let p = ((x + (7 - t)) % 64) + (ny * 32);
+                let old = CHIP8_GRAPHICS.buffer[p];
+                CHIP8_GRAPHICS.buffer[p] ^= row & 0x1;
+                if (old == 0x1 && CHIP8_GRAPHICS.buffer[p] == 0x0) {
+                    CHIP8.r.V[0xF] = 1;
+                }
+                row >>= 1;
+            }
+        }
+        CHIP8_GRAPHICS.draw();
+    },
+
     clear: function() {
         // TODO: Add more to clear.
         CHIP8_GRAPHICS.buffer = new Uint8Array(new ArrayBuffer(64*32));
     }
 }
 
-let FPS_INTERVAL = 200;
+let FPS_INTERVAL = 16;
 
 function drawMemory() {
     let ctx = document.getElementById("memview").getContext("2d");
