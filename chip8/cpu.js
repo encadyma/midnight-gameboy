@@ -61,6 +61,7 @@ CHIP8 = {
             case 0x0:
                 // handle 0x0..
                 CHIP8.colorRaised = "#95a5a6";
+                console.error("0x0 not supported: " + hex(op));
                 break;
             case 0x1:
                 // JUMP opcode (0x1NNN)
@@ -214,12 +215,16 @@ CHIP8_GRAPHICS = {
         // reads N bytes from memory
         // starting at I. Each byte represents
         // one 8-pixel row.
+        
+        x = CHIP8.r.V[x];
+        y = CHIP8.r.V[y];
+
         CHIP8.r.V[0xF] = 0;
         for (let ind = 0; ind < n; ind++) {
             let row = CHIP8_MEM[CHIP8.r.I + ind];
-            let ny = (y + ind) % 32;
+            let ny = y + ind;
             for (let t = 0; t < 8; t++) {
-                let p = ((x + (7 - t)) % 64) + (ny * 32);
+                let p = (x + (7 - t)) + (ny * 32);
                 let old = CHIP8_GRAPHICS.buffer[p];
                 CHIP8_GRAPHICS.buffer[p] ^= row & 0x1;
                 if (old == 0x1 && CHIP8_GRAPHICS.buffer[p] == 0x0) {
@@ -238,6 +243,23 @@ CHIP8_GRAPHICS = {
 }
 
 let FPS_INTERVAL = 16;
+
+function dumpGraphics() {
+    let d = [];
+    for (let y = 0; y < 32; y++) {
+        let rowStr = [];
+        for (let x = 0; x < 64; x++) {
+            let p = x + (y * 32);
+            rowStr.push(CHIP8_GRAPHICS.buffer[p] > 0 ? "o" : " ");
+        }
+        d.push("R" + y + "\t" + rowStr.join(""))
+    }
+    document.getElementById("dump").innerHTML = d.join("\n")
+}
+
+function dumpCPU() {
+    document.getElementById("dump").innerHTML = JSON.stringify(CHIP8, null, 2);
+}
 
 function drawMemory() {
     let ctx = document.getElementById("memview").getContext("2d");
@@ -272,8 +294,6 @@ function loadROM(fileList) {
             console.log("ROM read completed, size = " + new Uint8Array(b).length);
             CHIP8.memLoad(b);
             drawMemory();
-
-            clockInterval = setInterval(loop, FPS_INTERVAL);
         })
     } else {
         console.log("change found, but no files uploaded.");
@@ -281,6 +301,10 @@ function loadROM(fileList) {
 }
 
 let clockInterval;
+
+function startLoop() {
+    clockInterval = setInterval(loop, FPS_INTERVAL);
+}
 
 function loop() {
     CHIP8.read();
@@ -296,7 +320,7 @@ function init() {
     drawMemory();
 }
 
-function clear() {
+function clearLoop() {
     if (clockInterval) {
         clearInterval(clockInterval);
     }
