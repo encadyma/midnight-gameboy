@@ -5,6 +5,9 @@ html, body {
     padding: 20px;
     font-family: monospace;
     text-align: left;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
 }
 
 a {

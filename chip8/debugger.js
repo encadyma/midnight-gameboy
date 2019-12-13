@@ -3,16 +3,18 @@ DEBUGGER = {
     lastOps: [],
     ET: 0,      // Error Timer (cycles to show error),
     menuChoices: [
+        "MAIN",
         "MEMORY",
         "CPU",
         "KEYS",
         "DEBUG",
         "DISPLAY"
     ],
-    currentChoice: "MEMORY",
+    currentChoice: "MAIN",
     report: function(op, type) {
         DEBUGGER.lastOps.push({ op, type })
     },
+    slowMode: false,
 }
 
 function dumpGraphics() {
@@ -51,14 +53,20 @@ function drawMain() {
         shouldRefresh = false;
     }
 
-    if (DEBUGGER.currentChoice == "MEMORY") {
+    drawMemorySide();
+
+    if (DEBUGGER.currentChoice == "MAIN") {
+        drawMainMenu();
+    } else if (DEBUGGER.currentChoice == "MEMORY") {
         drawMemory();
+    } else if (DEBUGGER.currentChoice == "CPU") {
+        drawCPU();
     } else {
         drawUnknown();
     }
 }
 
-function drawMemory() {
+function drawMemorySide() {
     for (let m = 0; m < CHIP8_MEM.length; m++) {
         let x = m % 64, y = Math.floor(m / 64);
         if (CHIP8.r.PC == m) {
@@ -85,14 +93,70 @@ function drawMemory() {
     ctx.fillText(getLastInstr(), 310, 25);
 }
 
-function drawUnknown() {
-    ctx.clearRect(0, 0, 640, 256);
+let mainBtns = [];
+
+function drawMainMenu() {
+    ctx.clearRect(270, 40, 370, 210);
+    ctx.fillStyle = MIDNIGHT.fg;
+    mainBtns = [
+        drawTextBtn(270, 50, 40, 40, "Play", "\u25B6", startLoop),
+        drawTextBtn(320, 50, 40, 40, "Slow", "s\u25B7", startSlowLoop),
+        drawTextBtn(370, 50, 40, 40, "Pause", "\u23F8", clearLoop),
+        drawTextBtn(420, 50, 40, 40, "Step", "\u25CE", loop)
+    ]
+}
+
+function drawCPU() {
+    ctx.clearRect(270, 40, 370, 210);
     ctx.fillStyle = MIDNIGHT.fg;
     ctx.font = '14px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('VIEW NOT IMPLEMENTED', 320, 120);
+    ctx.fillText('CPU NOT IMPLEMENTED', 455, 120);
     ctx.font = '10px monospace';
-    ctx.fillText('(please choose another menu)', 320, 140);
+    ctx.fillText('(please choose another menu)', 455, 140);
+}
+
+function drawMemory() {
+    ctx.clearRect(270, 40, 370, 210);
+    ctx.fillStyle = MIDNIGHT.fg;
+    ctx.font = '14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('MEMORY NOT IMPLEMENTED', 455, 120);
+    ctx.font = '10px monospace';
+    ctx.fillText('(please choose another menu)', 455, 140);
+}
+
+function drawUnknown() {
+    ctx.clearRect(270, 40, 370, 210);
+    ctx.fillStyle = MIDNIGHT.fg;
+    ctx.font = '14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('VIEW NOT IMPLEMENTED', 455, 120);
+    ctx.font = '10px monospace';
+    ctx.fillText('(please choose another menu)', 455, 140);
+}
+
+function drawTextBtn(x, y, w, h, text, lbl, cb) {
+    ctx.fillStyle = MIDNIGHT.fg;
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, x + (w / 2), y + h + 14);
+
+    return drawBtn(x, y, w, h, lbl, cb);
+}
+
+function drawBtn(x, y, w, h, lbl, cb) {
+    ctx.clearRect(x, y, w, h);
+    ctx.fillStyle = MIDNIGHT.fg + "AA";
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = MIDNIGHT.bg;
+    ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+    ctx.fillStyle = MIDNIGHT.fg + "AA";
+    ctx.font = '20px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(lbl, x + (w / 2), y + (h / 2) + 4);
+
+    return {x, y, w, h, cb}
 }
 
 function getLastOp() {
@@ -164,6 +228,15 @@ screen.onclick = function (event) {
             DEBUGGER.currentChoice = DEBUGGER.menuChoices[Math.floor(x / 90)]
         }
     }
+
+    // Main menu buttons
+    mainBtns.forEach((btn) => {
+        if (x >= btn.x && x <= btn.x + btn.w
+            && y >= btn.y && y <= btn.y + btn.h) {
+                btn.cb();
+                return;
+            }
+    })
 
     shouldRefresh = true;
     drawDebugger();

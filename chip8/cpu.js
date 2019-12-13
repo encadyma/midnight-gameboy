@@ -52,8 +52,6 @@ CHIP8 = {
         DEBUGGER.report(nextOp, CHIP8.do(nextOp));
     },
 
-    colorRaised: "#88dd00",
-
     // Performs an opcode operation
     // Needs to handle all 35 opcodes!
     do: function(op) {
@@ -377,6 +375,15 @@ function loadROM(fileList) {
 let clockInterval;
 
 function startLoop() {
+    clearLoop();
+    FPS_INTERVAL = 1;
+    clockInterval = setInterval(loop, FPS_INTERVAL);
+}
+
+function startSlowLoop() {
+    clearLoop();
+    DEBUGGER.slowMode = true;
+    FPS_INTERVAL = 200;
     clockInterval = setInterval(loop, FPS_INTERVAL);
 }
 
@@ -394,5 +401,7 @@ function init() {
 function clearLoop() {
     if (clockInterval) {
         clearInterval(clockInterval);
+        DEBUGGER.slowMode = false;
+        clockInterval = 0;
     }
 }
