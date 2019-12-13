@@ -80,7 +80,7 @@ CHIP8 = {
                 // EQUALS OP (0x3XNN)
                 // Skips next instruction
                 // if VX == NN
-                if (CHIP8.r.V[secondDigit] == op & 0xff) {
+                if (CHIP8.r.V[secondDigit] == (op & 0xff)) {
                     CHIP8.r.PC += 2;
                 }
                 CHIP8.colorRaised = "#3B3B98";
@@ -89,7 +89,7 @@ CHIP8 = {
                 // NOT EQUALS OP (0x4XNN)
                 // Skips next instruction
                 // if VX != NN
-                if (CHIP8.r.V[secondDigit] != op & 0xff) {
+                if (CHIP8.r.V[secondDigit] != (op & 0xff)) {
                     CHIP8.r.PC += 2;
                 }
                 CHIP8.colorRaised = "#6D214F";
@@ -209,7 +209,7 @@ CHIP8_GRAPHICS = {
             ctx.fillRect(x * 10, y * 10, 10, 10);
         }
     },
-
+    
     drawSprite: function(x, y, n) {
         // Starting from (x, y),
         // reads N bytes from memory
@@ -222,14 +222,16 @@ CHIP8_GRAPHICS = {
         CHIP8.r.V[0xF] = 0;
         for (let ind = 0; ind < n; ind++) {
             let row = CHIP8_MEM[CHIP8.r.I + ind];
-            let ny = y + ind;
-            for (let t = 0; t < 8; t++) {
-                let p = (x + (7 - t)) + (ny * 32);
+            let ny = (y + ind) % 32;
+            for (let tx = 0; tx < 8; tx++) {
+                let nx = (x + (7 - tx)) % 64; 
+                let p = nx + (ny * 64);
                 let old = CHIP8_GRAPHICS.buffer[p];
                 CHIP8_GRAPHICS.buffer[p] ^= row & 0x1;
                 if (old == 0x1 && CHIP8_GRAPHICS.buffer[p] == 0x0) {
                     CHIP8.r.V[0xF] = 1;
                 }
+
                 row >>= 1;
             }
         }
@@ -245,16 +247,20 @@ CHIP8_GRAPHICS = {
 let FPS_INTERVAL = 16;
 
 function dumpGraphics() {
+    let flog = "DISPLAY\n========================\n";
+
     let d = [];
     for (let y = 0; y < 32; y++) {
         let rowStr = [];
         for (let x = 0; x < 64; x++) {
-            let p = x + (y * 32);
+            let p = x + (y * 64);
             rowStr.push(CHIP8_GRAPHICS.buffer[p] > 0 ? "o" : " ");
         }
         d.push("R" + y + "\t" + rowStr.join(""))
     }
-    document.getElementById("dump").innerHTML = d.join("\n")
+    flog += d.join("\n");
+
+    document.getElementById("dump").innerHTML = flog;
 }
 
 function dumpCPU() {

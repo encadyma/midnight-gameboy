@@ -11,9 +11,12 @@
         <button onclick="dumpCPU()">Dump CPU</button>
     </div>
     <div>
-        <button onclick="loop()">Step Program</button>
         <button onclick="startLoop()">Start Loop</button>
         <button onclick="clearLoop()">Clear Loop</button>
+    </div>
+    <div>
+        <button onclick="loop()">Step Program</button>
+        <button onclick="loop(); dumpCPU()">Step & Dump</button>
     </div>
     <p>Project possible by <a href="http://www.codeslinger.co.uk/pages/projects/chip8.html">this tutorial!</a></p>
     <canvas id="memview" width="256" height="280"></canvas>
