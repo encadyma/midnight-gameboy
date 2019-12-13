@@ -43,6 +43,7 @@ CODES = {
     setDelay: { name: (op) => `SETTD V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
     setSound: { name: (op) => `SETTS V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
     addI: { name: (op) => `ADDI V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
+    fontSetI: { name: (op) => `FONTI V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
     decimalize: { name: (op) => `DCML V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
     dumpReg: { name: (op) => `DUMP V0, V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
     restoreReg: { name: (op) => `RSTR V0, V${hex((op >> 2) & 0xf)}`, color: '#130f40' },

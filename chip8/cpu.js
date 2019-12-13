@@ -56,6 +56,13 @@ CHIP8 = {
         for (let i = 0; i < prgm.length; i++) {
             CHIP8_MEM[i + 0x200] = prgm[i];
         }
+
+        console.log("Also loading reserved fonts.")
+        for (let i = 0; i < FONT.length; i++) {
+            for (let ix = 0; ix < FONT[i].length; ix++) {
+                CHIP8_MEM[i * 5 + ix] = FONT[i][ix];
+            }
+        }
     },
 
     // Consumes from memory the next operation.
@@ -231,6 +238,9 @@ CHIP8 = {
                 }
                 CHIP8.r.I += CHIP8.r.V[reg];
                 return CODES.addI;
+            case 0x29:
+                CHIP8.r.I = CHIP8.r.V[reg] * 5;
+                return CODES.fontSetI;
             case 0x33:
                 // CONVERTS VX TO DECIMAL; DUMPS
                 // BASE-10 DIGITS TO MEMORY
@@ -251,7 +261,6 @@ CHIP8 = {
                     CHIP8.r.V[i] = CHIP8_MEM[CHIP8.r.I + i];
                 }
                 return CODES.restoreReg;
-            case 0x29:
             default:
                 console.error("0xF code not supported: " + hex(mode));
         }
