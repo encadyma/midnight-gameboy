@@ -143,22 +143,22 @@ function drawKeys() {
     ctx.clearRect(270, 40, 370, 210);
     ctx.fillStyle = MIDNIGHT.fg;
     keyBtns = [
-        drawKeyBtn(270, 50, 40, 40, "1", "1", null, startLoop),
-        drawKeyBtn(320, 50, 40, 40, "2", "2", null , startSlowLoop),
-        drawKeyBtn(370, 50, 40, 40, "3", "3", null, clearLoop),
-        drawKeyBtn(420, 50, 40, 40, "C", "4", null, loop),
-        drawKeyBtn(270, 100, 40, 40, "4", "Q", null, startLoop),
-        drawKeyBtn(320, 100, 40, 40, "5", "W", null, startSlowLoop),
-        drawKeyBtn(370, 100, 40, 40, "6", "E", null, clearLoop),
-        drawKeyBtn(420, 100, 40, 40, "D", "R", null, loop),
-        drawKeyBtn(270, 150, 40, 40, "7", "A", null, startLoop),
-        drawKeyBtn(320, 150, 40, 40, "8", "S", null, startSlowLoop),
-        drawKeyBtn(370, 150, 40, 40, "9", "D", null, clearLoop),
-        drawKeyBtn(420, 150, 40, 40, "E", "F", null, loop),
-        drawKeyBtn(270, 200, 40, 40, "A", "Z", null, startLoop),
-        drawKeyBtn(320, 200, 40, 40, "0", "X", null, startSlowLoop),
-        drawKeyBtn(370, 200, 40, 40, "B", "C", null, clearLoop),
-        drawKeyBtn(420, 200, 40, 40, "F", "V", null, loop),
+        drawKeyBtn(270, 50, 40, 40, "1", "1", CHIP8.KEYS[0x1] ? "#ddaa00" : null, 0x1),
+        drawKeyBtn(320, 50, 40, 40, "2", "2", CHIP8.KEYS[0x2] ? "#ddaa00" : null , 0x2),
+        drawKeyBtn(370, 50, 40, 40, "3", "3", CHIP8.KEYS[0x3] ? "#ddaa00" : null, 0x3),
+        drawKeyBtn(420, 50, 40, 40, "C", "4", CHIP8.KEYS[0xC] ? "#ddaa00" : null, 0xC),
+        drawKeyBtn(270, 100, 40, 40, "4", "Q", CHIP8.KEYS[0x4] ? "#ddaa00" : null, 0x4),
+        drawKeyBtn(320, 100, 40, 40, "5", "W", CHIP8.KEYS[0x5] ? "#ddaa00" : null, 0x5),
+        drawKeyBtn(370, 100, 40, 40, "6", "E", CHIP8.KEYS[0x6] ? "#ddaa00" : null, 0x6),
+        drawKeyBtn(420, 100, 40, 40, "D", "R", CHIP8.KEYS[0xD] ? "#ddaa00" : null, 0xD),
+        drawKeyBtn(270, 150, 40, 40, "7", "A", CHIP8.KEYS[0x7] ? "#ddaa00" : null, 0x7),
+        drawKeyBtn(320, 150, 40, 40, "8", "S", CHIP8.KEYS[0x8] ? "#ddaa00" : null, 0x8),
+        drawKeyBtn(370, 150, 40, 40, "9", "D", CHIP8.KEYS[0x9] ? "#ddaa00" : null, 0x9),
+        drawKeyBtn(420, 150, 40, 40, "E", "F", CHIP8.KEYS[0xE] ? "#ddaa00" : null, 0xE),
+        drawKeyBtn(270, 200, 40, 40, "A", "Z", CHIP8.KEYS[0xA] ? "#ddaa00" : null, 0xA),
+        drawKeyBtn(320, 200, 40, 40, "0", "X", CHIP8.KEYS[0x0] ? "#ddaa00" : null, 0x0),
+        drawKeyBtn(370, 200, 40, 40, "B", "C", CHIP8.KEYS[0xB] ? "#ddaa00" : null, 0xB),
+        drawKeyBtn(420, 200, 40, 40, "F", "V", CHIP8.KEYS[0xF] ? "#ddaa00" : null, 0xF),
     ]
 }
 
@@ -181,7 +181,7 @@ function drawTextBtn(x, y, w, h, text, lbl, clr, cb) {
     return drawBtn(x, y, w, h, lbl, clr, cb);
 }
 
-function drawKeyBtn(x, y, w, h, lbl, slbl, clr, cb) {
+function drawKeyBtn(x, y, w, h, lbl, slbl, clr, key) {
     ctx.clearRect(x, y, w, h);
     ctx.fillStyle = clr || MIDNIGHT.fg + "AA";
     ctx.fillRect(x, y, w, h);
@@ -195,7 +195,7 @@ function drawKeyBtn(x, y, w, h, lbl, slbl, clr, cb) {
     ctx.textAlign = 'right';
     ctx.fillText(slbl, x + w - 8, y + h - 8);
 
-    return {x, y, w, h, cb}
+    return {x, y, w, h, key}
 }
 
 function drawBtn(x, y, w, h, lbl, clr, cb) {
@@ -294,5 +294,115 @@ screen.onclick = function (event) {
     }
 
     shouldRefresh = true;
+    drawDebugger();
+}
+
+document.onkeydown = function (event) {
+    switch (event.code) {
+        case 'Digit1':
+            CHIP8.inputKey(0x1);
+            break;
+        case 'Digit2':
+            CHIP8.inputKey(0x2);
+            break;
+        case 'Digit3':
+            CHIP8.inputKey(0x3);
+            break;
+        case 'Digit4':
+            CHIP8.inputKey(0xC);
+            break;
+        case 'KeyQ':
+            CHIP8.inputKey(0x4);
+            break;
+        case 'KeyW':
+            CHIP8.inputKey(0x5);
+            break;
+        case 'KeyE':
+            CHIP8.inputKey(0x6);
+            break;
+        case 'KeyR':
+            CHIP8.inputKey(0xD);
+            break;
+        case 'KeyA':
+            CHIP8.inputKey(0x7);
+            break;
+        case 'KeyS':
+            CHIP8.inputKey(0x8);
+            break;
+        case 'KeyD':
+            CHIP8.inputKey(0x9);
+            break;
+        case 'KeyF':
+            CHIP8.inputKey(0xE);
+            break;
+        case 'KeyZ':
+            CHIP8.inputKey(0xA);
+            break;
+        case 'KeyX':
+            CHIP8.inputKey(0x0);
+            break;
+        case 'KeyC':
+            CHIP8.inputKey(0xB);
+            break;
+        case 'KeyV':
+            CHIP8.inputKey(0xF);
+            break;
+    }
+
+    drawDebugger();
+}
+
+document.onkeyup = function (event) {
+    switch (event.code) {
+        case 'Digit1':
+            CHIP8.releaseKey(0x1);
+            break;
+        case 'Digit2':
+            CHIP8.releaseKey(0x2);
+            break;
+        case 'Digit3':
+            CHIP8.releaseKey(0x3);
+            break;
+        case 'Digit4':
+            CHIP8.releaseKey(0xC);
+            break;
+        case 'KeyQ':
+            CHIP8.releaseKey(0x4);
+            break;
+        case 'KeyW':
+            CHIP8.releaseKey(0x5);
+            break;
+        case 'KeyE':
+            CHIP8.releaseKey(0x6);
+            break;
+        case 'KeyR':
+            CHIP8.releaseKey(0xD);
+            break;
+        case 'KeyA':
+            CHIP8.releaseKey(0x7);
+            break;
+        case 'KeyS':
+            CHIP8.releaseKey(0x8);
+            break;
+        case 'KeyD':
+            CHIP8.releaseKey(0x9);
+            break;
+        case 'KeyF':
+            CHIP8.releaseKey(0xE);
+            break;
+        case 'KeyZ':
+            CHIP8.releaseKey(0xA);
+            break;
+        case 'KeyX':
+            CHIP8.releaseKey(0x0);
+            break;
+        case 'KeyC':
+            CHIP8.releaseKey(0xB);
+            break;
+        case 'KeyV':
+            CHIP8.releaseKey(0xF);
+            break;
+    }
+
     drawDebugger();
 }

@@ -25,6 +25,24 @@ CHIP8 = {
 
     ST: new Uint16Array(new ArrayBuffer(64)), // THE STACK!
 
+    KEYS: new Uint8Array(new ArrayBuffer(16)),
+    KH: 0x0,
+
+    // Inputs a key, removes the hold key flag if set
+    inputKey(key) {
+        if (CHIP8.KH > 0x0) {
+            CHIP8.r.V[CHIP8.KH - 1] = key;
+            CHIP8.KH = 0x0;
+        }
+        
+        CHIP8.KEYS[key] = 0x1;
+    },
+
+    // Releases a key
+    releaseKey(key) {
+        CHIP8.KEYS[key] = 0x0;
+    },
+
     // Loads in bytes from PRGMBUFFER onto 0x200-.
     memLoad(prgmBuffer) {
         console.log("Loading program buffer into memory.")
@@ -43,6 +61,10 @@ CHIP8 = {
     // Consumes from memory the next operation.
     // Reads for one word/two bytes!
     read: function() {
+        if (CHIP8.KH > 0x0) {
+            return;
+        }
+
         nextOp = CHIP8_MEM[CHIP8.r.PC];
         nextOp <<= 8;
         nextOp |= CHIP8_MEM[CHIP8.r.PC + 1];
@@ -157,10 +179,17 @@ CHIP8 = {
     },
 
     handleOpE: function(reg, mode) {
-        // TODO: CHIP8.colorRaise = "#be2edd";
         switch (mode) {
             case 0x9E:
+                if (CHIP8.KEYS[CHIP8.r.V[reg]] == 0x1) {
+                    CHIP8.r.PC += 2;
+                }
+                return CODES.keyEqJump;
             case 0xA1:
+                if (CHIP8.KEYS[CHIP8.r.V[reg]] == 0x0) {
+                    CHIP8.r.PC += 2;
+                }
+                return CODES.keyNotEqJump;
             default:
                 console.error("Key 0xE code not supported: " + hex(mode));
         }
@@ -183,6 +212,10 @@ CHIP8 = {
                 // SET VX to DELAY TIMER
                 CHIP8.r.V[reg] = CHIP8.r.TD;
                 return CODES.getDelay;
+            case 0x0A:
+                // WAIT FOR KEY
+                CHIP8.KH = reg + 0x1;
+                return CODES.keyWait;
             case 0x15:
                 // SET DELAY TIMER to VX
                 CHIP8.r.TD = CHIP8.r.V[reg];
@@ -218,7 +251,6 @@ CHIP8 = {
                     CHIP8.r.V[i] = CHIP8_MEM[CHIP8.r.I + i];
                 }
                 return CODES.restoreReg;
-            case 0x0A:
             case 0x29:
             default:
                 console.error("0xF code not supported: " + hex(mode));

@@ -22,6 +22,10 @@ CODES = {
     setRand: { name: (op) => `SETRND V${hex((op >> 2) & 0xf)}, ${fhex(op & 0xff)}`, color: '#BDC581' },
     draw: { name: (op) => `DRAW V${hex((op >> 2) & 0xf)}, V${hex((op >> 1) & 0xf)}, ${hex(op & 0xf)}`, color: '#badc58' },
 
+    // 0xe operations:
+    keyEqJump: { name: (op) => 'KJMP V' + hex((op >> 2) & 0xf), color: '#be2edd' },
+    keyNotEqJump: { name: (op) => 'NKJMP V' + hex((op >> 2) & 0xf), color: '#be2edd' },
+
     // 0x8 operations:
     copyReg: { name: (op) => `SET V${hex((op >> 2) & 0xf)}, V${hex((op >> 1) & 0xf)}`, color: '#FC427B' },
     or: { name: (op) => `OR V${hex((op >> 2) & 0xf)}, V${hex((op >> 1) & 0xf)}`, color: '#FC427B' },
@@ -35,6 +39,7 @@ CODES = {
 
     // 0xF operations:
     getDelay: { name: (op) => `GETTD V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
+    keyWait: { name: (op) => `KEYWT V${hex((op >> 2) & 0xf)}`, color: '#be2edd' },
     setDelay: { name: (op) => `SETTD V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
     setSound: { name: (op) => `SETTS V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
     addI: { name: (op) => `ADDI V${hex((op >> 2) & 0xf)}`, color: '#130f40' },
