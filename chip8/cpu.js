@@ -43,6 +43,7 @@ CHIP8 = {
         nextOp |= CHIP8_MEM[CHIP8.r.PC + 1];
         CHIP8.r.PC += 2;
         CHIP8.lastOp = nextOp;
+        CHIP8.handleTimers();
         CHIP8.do(nextOp);
     },
 
@@ -60,8 +61,7 @@ CHIP8 = {
         switch (firstDigit) {
             case 0x0:
                 // handle 0x0..
-                CHIP8.colorRaised = "#95a5a6";
-                console.error("0x0 not supported: " + hex(op));
+                CHIP8.handleOp0(op & 0xfff);
                 break;
             case 0x1:
                 // JUMP opcode (0x1NNN)
@@ -154,10 +154,103 @@ CHIP8 = {
                 CHIP8.colorRaised = "#badc58";
                 break;
             case 0xE:
+                CHIP8.handleOpE(secondDigit, op & 0xff);
+                break;
             case 0xF:
+                CHIP8.handleOpF(secondDigit, op & 0xff);
+                break;
             default:
                 CHIP8.colorRaised = "#ff0000";
                 console.error("opcode not supported: " + hex(op));
+        }
+    },
+
+    handleOpE: function(reg, mode) {
+        CHIP8.colorRaise = "#be2edd";
+        switch (mode) {
+            case 0x9E:
+            case 0xA1:
+            default:
+                CHIP8.colorRaised = "#ff0000";
+                console.error("Key 0xE code not supported: " + hex(mode));
+        }
+    },
+
+    handleTimers: function() {
+        if (CHIP8.r.TD > 0) {
+            CHIP8.r.TD -= 1;
+        }
+        if (CHIP8.r.TS > 0) {
+            CHIP8.r.TS -= 1;
+        }
+    },
+
+    handleOpF: function(reg, mode) {
+        CHIP8.colorRaise = "#130f40";
+        switch (mode) {
+            case 0x07:
+                // SET VX to DELAY TIMER
+                CHIP8.r.V[reg] = CHIP8.r.TD;
+                break;
+            case 0x15:
+                // SET DELAY TIMER to VX
+                CHIP8.r.TD = CHIP8.r.V[reg];
+                break;
+            case 0x18:
+                // SET SOUND TIMER to VX
+                CHIP8.r.TS = CHIP8.r.V[reg];
+                break;
+            case 0x1E:
+                // ADD VX TO I
+                if (CHIP8.r.I + CHIP8.r.V[reg] > 0xfff) {
+                    CHIP8.r.V[0xf] = 1;
+                }
+                CHIP8.r.I += CHIP8.r.V[reg];
+                break;
+            case 0x33:
+                // CONVERTS VX TO DECIMAL; DUMPS
+                // BASE-10 DIGITS TO MEMORY
+                let rn = CHIP8.r.V[reg];
+                for (let d = 0; d <= 2; d++) {
+                    CHIP8_MEM[CHIP8.r.I + d] = (Math.floor(rn / Math.pow(10, 2 - d))) % 10;
+                }
+                break;
+            case 0x55:
+                // DUMP V0~VX TO MEMORY
+                for (let i = 0x0; i <= reg; i++) {
+                    CHIP8_MEM[CHIP8.r.I + i] = CHIP8.r.V[i];
+                }
+                break;
+            case 0x65:
+                // RESTORE FROM MEMORY TO V0~VX
+                for (let i = 0x0; i <= reg; i++) {
+                    CHIP8.r.V[i] = CHIP8_MEM[CHIP8.r.I + i];
+                }
+                break;
+            case 0x0A:
+            case 0x29:
+            default:
+                CHIP8.colorRaised = "#ff0000";
+                console.error("0xF code not supported: " + hex(mode));
+        }
+    },
+
+    handleOp0: function(mode) {
+        switch(mode) {
+            case 0xE0:
+                CHIP8_GRAPHICS.clear();
+                CHIP8_GRAPHICS.draw();
+                CHIP8.colorRaised = "#badc58";
+                break;
+            case 0xEE:
+                CHIP8.r.SP -= 1;
+                CHIP8.r.PC = CHIP8.ST[CHIP8.r.SP];
+                CHIP8.ST[CHIP8.r.SP] = 0;
+                CHIP8.colorRaised = "#1abc9c";
+                break;
+            default:
+                CHIP8.colorRaised = "#ff0000";
+                console.error("RCA 1802 (" + mode.toString(16) + ") not supported: " + hex(mode));
         }
     },
 
@@ -176,10 +269,31 @@ CHIP8 = {
                 CHIP8.r.V[x] ^= CHIP8.r.V[y]
                 break;
             case 0x4:
+                if (CHIP8.r.V[x] + CHIP8.r.V[y] > 0xff) {
+                    CHIP8.r.V[0xf] = 1;
+                }
+                CHIP8.r.V[x] += CHIP8.r.V[y]
+                break;
             case 0x5:
+                if (CHIP8.r.V[x] > CHIP8.r.V[y]) {
+                    CHIP8.r.V[0xf] = 1;
+                }
+                CHIP8.r.V[x] -= CHIP8.r.V[y]
+                break;
             case 0x6:
+                CHIP8.r.V[0xf] = CHIP8.r.V[x] & 0x1;
+                CHIP8.r.V[x] >>= 1;
+                break;
             case 0x7:
+                if (CHIP8.r.V[y] > CHIP8.r.V[x]) {
+                    CHIP8.r.V[0xf] = 1;
+                }
+                CHIP8.r.V[x] = CHIP8.r.V[y] - CHIP8.r.V[x]
+                break;
             case 0xE:
+                CHIP8.r.V[0xf] = CHIP8.r.V[x] != 0x0 ? 0x1 : 0x0;
+                CHIP8.r.V[x] <<= 1;
+                break;
             default:
                 CHIP8.colorRaised = "#ff0000";
                 console.error("math opcode not supported: 0x" + hex(mode));
@@ -244,7 +358,7 @@ CHIP8_GRAPHICS = {
     }
 }
 
-let FPS_INTERVAL = 16;
+let FPS_INTERVAL = 1;
 
 function dumpGraphics() {
     let flog = "DISPLAY\n========================\n";
@@ -285,7 +399,7 @@ function drawMemory() {
     ctx.clearRect(0, 256, 256, 24);
     ctx.fillStyle = "#ddaa00";
     ctx.font = '14px monospace';
-    ctx.fillText('fps: ' + (1000 / FPS_INTERVAL).toFixed(2), 10, 272);
+    ctx.fillText('cyc: ' + (1000 / FPS_INTERVAL).toFixed(0), 10, 272);
     ctx.fillText('pc: ' + hex(CHIP8.r.PC), 100, 272);
     ctx.fillStyle = CHIP8.colorRaised;
     ctx.fillText('opc: ' + hex(CHIP8.lastOp), 170, 272);
